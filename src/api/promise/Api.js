@@ -1,0 +1,42 @@
+// Copyright (C) 2023 Haderech Pte. Ltd.
+// SPDX-License-Identifier: Apache-2.0
+import { ApiPromise as ApiPromiseBase } from '@polkadot/api';
+import { AccountName, Binary, MultiAddress, UniversalAddress } from '../../types/index.js';
+import * as derives from '../derive/index.js';
+export class ApiPromise extends ApiPromiseBase {
+    static async create(options) {
+        const instance = await super.create({
+            derives,
+            ...options
+        });
+        /* eslint-disable sort-keys */
+        instance.registerTypes({
+            AccountId: 'UniversalAddress',
+            AccountIndex: 'AccountName',
+            AccountName,
+            Address: 'MultiAddress',
+            Binary,
+            ExtrinsicSignature: 'UniversalSignature',
+            LookupSource: 'MultiAddress',
+            MultiAddress,
+            P256Signature: '[u8; 64]',
+            UniversalAddress,
+            UniversalSignature: {
+                _enum: {
+                    Ed25519: 'Ed25519Signature',
+                    Sr25519: 'Sr25519Signature',
+                    Secp256k1: 'EcdsaSignature',
+                    P256: 'P256Signature',
+                    WebAuthn: 'WebAuthnSignature'
+                }
+            },
+            WebAuthnSignature: {
+                clientDataJSON: 'Binary',
+                authenticatorData: 'Binary',
+                signature: 'Binary'
+            }
+        });
+        /* eslint-enable sort-keys */
+        return instance;
+    }
+}

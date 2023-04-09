@@ -1,11 +1,12 @@
 import React, { useReducer, useContext, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import jsonrpc from '@polkadot/types/interfaces/jsonrpc'
-import { ApiPromise, WsProvider } from '@polkadot/api'
+import { ApiPromise } from '../api'
+import { WsProvider } from '@polkadot/api'
 import { web3Accounts, web3Enable } from '@polkadot/extension-dapp'
-import { keyring as Keyring } from '@polkadot/ui-keyring'
-import { isTestChain } from '@polkadot/util'
-import { TypeRegistry } from '@polkadot/types/create'
+import { Keyring } from '../keyring'
+// import { isTestChain } from '@polkadot/util'
+// import { TypeRegistry } from '@polkadot/types/create'
 
 import config from '../config'
 
@@ -26,7 +27,7 @@ const initialState = {
   currentAccount: null,
 }
 
-const registry = new TypeRegistry()
+// const registry = new TypeRegistry()
 
 ///
 // Reducer function for `useReducer`
@@ -78,24 +79,24 @@ const connect = (state, dispatch) => {
   _api.on('error', err => dispatch({ type: 'CONNECT_ERROR', payload: err }))
 }
 
-const retrieveChainInfo = async api => {
-  const [systemChain, systemChainType] = await Promise.all([
-    api.rpc.system.chain(),
-    api.rpc.system.chainType
-      ? api.rpc.system.chainType()
-      : Promise.resolve(registry.createType('ChainType', 'Live')),
-  ])
+// const retrieveChainInfo = async api => {
+//   const [systemChain, systemChainType] = await Promise.all([
+//     api.rpc.system.chain(),
+//     api.rpc.system.chainType
+//       ? api.rpc.system.chainType()
+//       : Promise.resolve(registry.createType('ChainType', 'Live')),
+//   ])
 
-  return {
-    systemChain: (systemChain || '<unknown>').toString(),
-    systemChainType,
-  }
-}
+//   return {
+//     systemChain: (systemChain || '<unknown>').toString(),
+//     systemChainType,
+//   }
+// }
 
 ///
 // Loading accounts from dev and polkadot-js extension
 const loadAccounts = (state, dispatch) => {
-  const { api } = state
+  // const { api } = state
   dispatch({ type: 'LOAD_KEYRING' })
 
   const asyncLoadAccounts = async () => {
@@ -110,13 +111,14 @@ const loadAccounts = (state, dispatch) => {
 
       // Logics to check if the connecting chain is a dev chain, coming from polkadot-js Apps
       // ref: https://github.com/polkadot-js/apps/blob/15b8004b2791eced0dde425d5dc7231a5f86c682/packages/react-api/src/Api.tsx?_pjax=div%5Bitemtype%3D%22http%3A%2F%2Fschema.org%2FSoftwareSourceCode%22%5D%20%3E%20main#L101-L110
-      const { systemChain, systemChainType } = await retrieveChainInfo(api)
-      const isDevelopment =
-        systemChainType.isDevelopment ||
-        systemChainType.isLocal ||
-        isTestChain(systemChain)
+      // const { systemChain, systemChainType } = await retrieveChainInfo(api)
+      // const isDevelopment =
+      //   systemChainType.isDevelopment ||
+      //   systemChainType.isLocal ||
+      //   isTestChain(systemChain)
 
-      Keyring.loadAll({ isDevelopment }, allAccounts)
+      // Keyring.loadAll({ isDevelopment }, allAccounts)
+      allAccounts.forEach(account => Keyring.addFromJson(account))
 
       dispatch({ type: 'SET_KEYRING', payload: Keyring })
     } catch (e) {
@@ -129,7 +131,7 @@ const loadAccounts = (state, dispatch) => {
 
 const SubstrateContext = React.createContext()
 
-let keyringLoadAll = false
+let keyringLoadAll = true
 
 const SubstrateContextProvider = props => {
   const neededPropNames = ['socket']
