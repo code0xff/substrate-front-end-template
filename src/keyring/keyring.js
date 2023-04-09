@@ -270,4 +270,4 @@ export class Keyring {
         return __classPrivateFieldGet(this, _Keyring_pairs, "f").get(address).toJson(passphrase);
     }
 }
-// _Keyring_pairs = new WeakMap(), _Keyring_type = new WeakMap(), _Keyring_ss58 = new WeakMap();
+_Keyring_pairs = new WeakMap(); _Keyring_type = new WeakMap(); _Keyring_ss58 = new WeakMap();
