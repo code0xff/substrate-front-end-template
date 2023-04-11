@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { Table, Grid, Button, Label } from 'semantic-ui-react'
 import { CopyToClipboard } from 'react-copy-to-clipboard'
 import { useSubstrateState } from './substrate-lib'
+import { decodeAddress, encodeAddress } from './util/address'
+import { buf2hex, hex2buf } from './util'
 
 export default function Main(props) {
   const { api, keyring } = useSubstrateState()
@@ -9,16 +11,25 @@ export default function Main(props) {
   const [balances, setBalances] = useState({})
 
   useEffect(() => {
-    const addresses = keyring.getPairs().map(account => account.address)
+    const addresses = keyring.getPairs().map(account => {
+      return account.address
+    })
+    .map(address => decodeAddress(address))
+    .map(address => address.slice(1))
+    .map(address => `0x${buf2hex(address)}`)
+    
     let unsubscribeAll = null
 
     api.query.system.account
       .multi(addresses, balances => {
         const balancesMap = addresses.reduce(
-          (acc, address, index) => ({
-            ...acc,
-            [address]: balances[index].data.free.toHuman(),
-          }),
+          (acc, address, index) => {
+            const universalAddress = encodeAddress(hex2buf(address))
+            return {
+              ...acc,
+              [universalAddress]: balances[index].data.free.toHuman(),
+            }
+          },
           {}
         )
         setBalances(balancesMap)

@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Form, Input, Grid, Label, Icon, Dropdown } from 'semantic-ui-react'
 import { TxButton } from './substrate-lib/components'
 import { useSubstrateState } from './substrate-lib'
+import { decodeAddress } from './util/address'
 
 export default function Main(props) {
   const [status, setStatus] = useState(null)
@@ -82,7 +83,7 @@ export default function Main(props) {
             attrs={{
               palletRpc: 'balances',
               callable: 'transfer',
-              inputParams: [addressTo, amount],
+              inputParams: [addressTo ? decodeAddress(addressTo).slice(1) : addressTo, amount],
               paramFields: [true, true],
             }}
           />

@@ -8,7 +8,6 @@ import { Keyring } from '../keyring'
 import { isTestChain } from '@polkadot/util'
 import { TypeRegistry } from '@polkadot/types/create'
 import { decodeAddress } from '@polkadot/util-crypto'
-import { encodeAddress } from '../util/address'
 import config from '../config'
 
 const parsedQuery = new URLSearchParams(window.location.search)
@@ -122,8 +121,7 @@ const loadAccounts = (state, dispatch) => {
       const keyring = new Keyring({ isDevelopment })
       allAccounts.forEach(account => { 
         const raw = decodeAddress(account.address)
-        const address = encodeAddress(raw)
-        keyring.addFromAddress(address, account.meta) 
+        keyring.addFromAddress(raw, account.meta, null, 'sr25519')
       })
 
       dispatch({ type: 'SET_KEYRING', payload: keyring })
