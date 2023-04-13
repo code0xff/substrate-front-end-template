@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { Button } from 'semantic-ui-react'
-import { web3FromSource } from '@polkadot/extension-dapp'
+import { web3FromAddress } from '@polkadot/extension-dapp'
+import { ApiPromise } from '../../api'
+import { Keyring } from '../../keyring'
 
 import { useSubstrateState } from '../'
 import utils from '../utils'
+import { decodeAddress } from '../../util/address'
+import { encodeAddress } from '@polkadot/util-crypto'
 
 function TxButton({
   attrs = null,
@@ -46,16 +50,19 @@ function TxButton({
   const getFromAcct = async () => {
     const {
       address,
-      meta: { source, isInjected },
+      // meta: { source, isInjected },
     } = currentAccount
+  
+    // if (!isInjected) {
+    //   return [currentAccount]
+    // }
 
-    if (!isInjected) {
-      return [currentAccount]
-    }
+    const ss58Address = encodeAddress(decodeAddress(address).slice(3))
 
     // currentAccount is injected from polkadot-JS extension, need to return the addr and signer object.
     // ref: https://polkadot.js.org/docs/extension/cookbook#sign-and-send-a-transaction
-    const injector = await web3FromSource(source)
+
+    const injector = await web3FromAddress(ss58Address)
     return [address, { signer: injector.signer }]
   }
 
@@ -97,16 +104,19 @@ function TxButton({
   }
 
   const signedTx = async () => {
-    const fromAcct = await getFromAcct()
+    // const fromAcct = await getFromAcct()
     const transformed = transformParams(paramFields, inputParams)
     // transformed can be empty parameters
+
+    const keyring = new Keyring({ type: 'sr25519' });
+    const alice = keyring.addFromUri('//Alice');
+    const api = await ApiPromise.create({ keyring });
 
     const txExecute = transformed
       ? api.tx[palletRpc][callable](...transformed)
       : api.tx[palletRpc][callable]()
 
-    const unsub = await txExecute
-      .signAndSend(...fromAcct, txResHandler)
+    const unsub = txExecute.signAndSend(alice, txResHandler)
       .catch(txErrHandler)
 
     setUnsub(() => unsub)

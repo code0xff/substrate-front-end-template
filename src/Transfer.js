@@ -3,6 +3,7 @@ import { Form, Input, Grid, Label, Icon, Dropdown } from 'semantic-ui-react'
 import { TxButton } from './substrate-lib/components'
 import { useSubstrateState } from './substrate-lib'
 import { decodeAddress } from './util/address'
+import { buf2hex } from './util'
 
 export default function Main(props) {
   const [status, setStatus] = useState(null)
@@ -83,7 +84,7 @@ export default function Main(props) {
             attrs={{
               palletRpc: 'balances',
               callable: 'transfer',
-              inputParams: [addressTo ? decodeAddress(addressTo).slice(1) : addressTo, amount],
+              inputParams: [addressTo ? `0x${buf2hex(decodeAddress(addressTo))}` : addressTo, amount],
               paramFields: [true, true],
             }}
           />
