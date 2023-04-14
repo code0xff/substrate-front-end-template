@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import { Button } from 'semantic-ui-react'
 import { web3FromSource } from '@polkadot/extension-dapp'
@@ -19,7 +19,6 @@ function TxButton({
   // Hooks
   const { api, currentAccount } = useSubstrateState()
   const [unsub, setUnsub] = useState(null)
-  const [sudoKey, setSudoKey] = useState(null)
 
   const { palletRpc, callable, inputParams, paramFields } = attrs
 
@@ -30,18 +29,6 @@ function TxButton({
   const isSigned = () => type === 'SIGNED-TX'
   const isRpc = () => type === 'RPC'
   const isConstant = () => type === 'CONSTANT'
-
-  const loadSudoKey = () => {
-    ;(async function () {
-      if (!api || !api.query.sudo) {
-        return
-      }
-      const sudoKey = await api.query.sudo.key()
-      sudoKey.isEmpty ? setSudoKey(null) : setSudoKey(sudoKey.toString())
-    })()
-  }
-
-  useEffect(loadSudoKey, [api])
 
   const getFromAcct = async () => {
     const {
@@ -97,19 +84,17 @@ function TxButton({
   }
 
   const signedTx = async () => {
-    const fromAcct = await getFromAcct()
     const transformed = transformParams(paramFields, inputParams)
     // transformed can be empty parameters
 
-    const txExecute = transformed
-      ? api.tx[palletRpc][callable](...transformed)
-      : api.tx[palletRpc][callable]()
+    // const txExecute = transformed
+    //   ? api.tx[palletRpc][callable](...transformed)
+    //   : api.tx[palletRpc][callable]()
+    // const transaction = txExecute.toHuman()
+    // console.log(toHuman)
+    // window.open(`http://localhost:9999/sign?message=${toHuman}`, '_blank', 'noopener, noreferrer')
 
-    const unsub = await txExecute
-      .signAndSend(...fromAcct, txResHandler)
-      .catch(txErrHandler)
-
-    setUnsub(() => unsub)
+    window.open(`http://localhost:9999/sign?palletRpc=${palletRpc}&callable=${callable}&params=${transformed}`, '_blank', 'noopener, noreferrer')
   }
 
   const unsignedTx = async () => {
@@ -253,13 +238,6 @@ function TxButton({
     })
   }
 
-  const isSudoer = acctPair => {
-    if (!sudoKey || !acctPair) {
-      return false
-    }
-    return acctPair.address === sudoKey
-  }
-
   return (
     <Button
       basic
@@ -271,10 +249,7 @@ function TxButton({
         disabled ||
         !palletRpc ||
         !callable ||
-        !allParamsFilled() ||
-        // These txs required currentAccount to be set
-        ((isSudo() || isUncheckedSudo() || isSigned()) && !currentAccount) ||
-        ((isSudo() || isUncheckedSudo()) && !isSudoer(currentAccount))
+        !allParamsFilled()
       }
     >
       {label}

@@ -1,28 +1,15 @@
 import React, { useState } from 'react'
-import { Form, Input, Grid, Label, Icon, Dropdown } from 'semantic-ui-react'
+import { Form, Input, Grid, Label, Icon } from 'semantic-ui-react'
 import { TxButton } from './substrate-lib/components'
-import { useSubstrateState } from './substrate-lib'
 
 export default function Main(props) {
   const [status, setStatus] = useState(null)
-  const [formState, setFormState] = useState({ addressTo: '', amount: 0 })
+  const [formState, setFormState] = useState({ addressFrom: '', addressTo: '', amount: 0 })
 
   const onChange = (_, data) =>
     setFormState(prev => ({ ...prev, [data.state]: data.value }))
 
-  const { addressTo, amount } = formState
-
-  const { keyring } = useSubstrateState()
-  const accounts = keyring.getPairs()
-
-  const availableAccounts = []
-  accounts.map(account => {
-    return availableAccounts.push({
-      key: account.meta.name,
-      text: account.meta.name,
-      value: account.address,
-    })
-  })
+  const { addressFrom, addressTo, amount } = formState
 
   return (
     <Grid.Column width={8}>
@@ -41,19 +28,17 @@ export default function Main(props) {
             Transfer more than the existential amount for account with 0 balance
           </Label>
         </Form.Field>
-
         <Form.Field>
-          <Dropdown
-            placeholder="Select from available addresses"
+          <Input
             fluid
-            selection
-            search
-            options={availableAccounts}
-            state="addressTo"
+            label="From"
+            type="text"
+            placeholder="address"
+            value={addressFrom}
+            state="addressFrom"
             onChange={onChange}
           />
         </Form.Field>
-
         <Form.Field>
           <Input
             fluid
@@ -82,8 +67,8 @@ export default function Main(props) {
             attrs={{
               palletRpc: 'balances',
               callable: 'transfer',
-              inputParams: [addressTo, amount],
-              paramFields: [true, true],
+              inputParams: [addressFrom, addressTo, amount],
+              paramFields: [true, true, true],
             }}
           />
         </Form.Field>
