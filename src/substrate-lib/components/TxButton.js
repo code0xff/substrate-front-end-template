@@ -241,6 +241,7 @@ function TxButton({
   return (
     <Button
       basic
+      size="mini"
       color={color}
       style={style}
       type="submit"
@@ -279,7 +280,7 @@ TxButton.propTypes = {
 
 function TxGroupButton(props) {
   return (
-    <Button.Group>
+    <Button.Group size="mini">
       <TxButton label="Unsigned" type="UNSIGNED-TX" color="grey" {...props} />
       <Button.Or />
       <TxButton label="Signed" type="SIGNED-TX" color="blue" {...props} />

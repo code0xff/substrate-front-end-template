@@ -162,10 +162,9 @@ function Main(props) {
 
   return (
     <Grid.Column width={8}>
-      <h1>Pallet Interactor</h1>
-      <Form>
-        <Form.Group style={{ overflowX: 'auto' }} inline>
-          <label>Interaction Type</label>
+      <h3>Pallet Interactor</h3>
+      <Form size="mini">
+        <Form.Group style={{ overflowX: 'auto' }} inline >
           <Form.Radio
             label="Extrinsic"
             name="interxType"

@@ -4,16 +4,16 @@ import { TxButton } from './substrate-lib/components'
 
 export default function Main(props) {
   const [status, setStatus] = useState(null)
-  const [formState, setFormState] = useState({ addressFrom: '', addressTo: '', amount: 0 })
+  const [formState, setFormState] = useState({ addressTo: '', amount: 0 })
 
   const onChange = (_, data) =>
     setFormState(prev => ({ ...prev, [data.state]: data.value }))
 
-  const { addressFrom, addressTo, amount } = formState
+  const { addressTo, amount } = formState
 
   return (
     <Grid.Column width={8}>
-      <h1>Transfer</h1>
+      <h3>Transfer</h3>
       <Form>
         <Form.Field>
           <Label basic color="teal">
@@ -30,17 +30,7 @@ export default function Main(props) {
         </Form.Field>
         <Form.Field>
           <Input
-            fluid
-            label="From"
-            type="text"
-            placeholder="address"
-            value={addressFrom}
-            state="addressFrom"
-            onChange={onChange}
-          />
-        </Form.Field>
-        <Form.Field>
-          <Input
+            size="mini"
             fluid
             label="To"
             type="text"
@@ -52,6 +42,7 @@ export default function Main(props) {
         </Form.Field>
         <Form.Field>
           <Input
+            size="mini"
             fluid
             label="Amount"
             type="number"
@@ -67,8 +58,8 @@ export default function Main(props) {
             attrs={{
               palletRpc: 'balances',
               callable: 'transfer',
-              inputParams: [addressFrom, addressTo, amount],
-              paramFields: [true, true, true],
+              inputParams: [addressTo, amount],
+              paramFields: [true, true],
             }}
           />
         </Form.Field>

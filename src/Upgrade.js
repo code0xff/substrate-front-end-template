@@ -24,10 +24,11 @@ export default function Main(props) {
 
   return (
     <Grid.Column width={8}>
-      <h1>Upgrade Runtime</h1>
+      <h3>Upgrade Runtime</h3>
       <Form>
         <Form.Field>
           <Input
+            size="mini"
             type="file"
             id="file"
             label="Wasm File"

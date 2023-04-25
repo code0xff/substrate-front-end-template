@@ -19,6 +19,7 @@ import NodeInfo from './NodeInfo'
 import TemplateModule from './TemplateModule'
 import Transfer from './Transfer'
 import Upgrade from './Upgrade'
+import Account from './Account'
 
 function Main() {
   const { apiState, apiError, } = useSubstrateState()
@@ -51,7 +52,7 @@ function Main() {
   return (
     <div ref={contextRef}>
       <Container>
-        <br/>
+        <Account />
         <Grid stackable columns="equal">
           <Grid.Row stretched>
             <NodeInfo />
