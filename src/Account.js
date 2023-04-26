@@ -3,18 +3,24 @@ import {
   Menu,
   Container,
   Button,
+  Label,
+  Icon,
 } from 'semantic-ui-react'
-// import { useSubstrate, useSubstrateState } from './substrate-lib'
+import qs from 'qs'
 
 function Main(props) {
-  // const {
-  //   setCurrentAccount,
-  //   state: { keyring, currentAccount },
-  // } = useSubstrate()
-
-  // const onChange = (_, data) => {
-  //   setFormState(prev => ({ ...prev, [data.state]: data.value }))
-  // }
+  const signin = () => {
+    const state = Math.random().toString(36).slice(2, 11)
+    const client_id = 'JJuzRtzmyV2S4h8tvLdR-Q'
+    const params = {
+      response_type: 'code',
+      scope: 'profile',
+      client_id,
+      state,
+    }
+    const queryString = qs.stringify(params)
+    window.location.href = `http://localhost:9999/api/v1/oauth2/authorize?${queryString}`
+  }
 
   return (
     <Menu
@@ -29,13 +35,21 @@ function Main(props) {
     >
       <Container>
         <Menu.Menu position="right" style={{ alignItems: 'center' }}>
-          <Button
-            basic
-            circular
-            color="grey"
-            floated="right"
-            icon="sign in"
-          />
+          {
+            props.account ?
+              <Label basic>
+                <Icon name="user" />{props.account}
+              </Label>
+              :
+              <Button
+                basic
+                circular
+                color="grey"
+                floated="right"
+                icon="sign in"
+                onClick={signin}
+              />
+          }
         </Menu.Menu>
       </Container>
     </Menu>

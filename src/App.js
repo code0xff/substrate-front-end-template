@@ -1,10 +1,11 @@
-import React, { createRef } from 'react'
+import React, { createRef, useEffect } from 'react'
 import {
   Container,
   Dimmer,
   Loader,
   Grid,
   Message,
+  Sticky,
 } from 'semantic-ui-react'
 import 'semantic-ui-css/semantic.min.css'
 
@@ -21,8 +22,30 @@ import Transfer from './Transfer'
 import Upgrade from './Upgrade'
 import Account from './Account'
 
+import { useSearchParams } from 'react-router-dom'
+import { requestToken, requestResource } from './oauth/oauth.js'
+
 function Main() {
   const { apiState, apiError, } = useSubstrateState()
+  const [account, setAccount] = React.useState()
+  const [searchParams] = useSearchParams()
+
+  const code = searchParams.get('code')
+  useEffect(() => {
+    if (code) {
+      requestToken(code)
+        .then(res => res.text())
+        .then(body => {
+          const token = JSON.parse(body)
+          requestResource(token.access_token)
+            .then(res => res.text())
+            .then(body => {
+              const resource = JSON.parse(body)
+              setAccount(resource.public_key)
+            })
+        })
+    }
+  }, [])
 
   const loader = text => (
     <Dimmer active>
@@ -52,7 +75,9 @@ function Main() {
   return (
     <div ref={contextRef}>
       <Container>
-        <Account />
+        <Sticky context={contextRef}>
+          <Account account={account} />
+        </Sticky>
         <Grid stackable columns="equal">
           <Grid.Row stretched>
             <NodeInfo />
