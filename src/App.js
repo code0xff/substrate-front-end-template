@@ -24,27 +24,34 @@ import Account from './Account'
 
 import { useSearchParams } from 'react-router-dom'
 import { requestToken, requestResource } from './oauth/oauth.js'
+import { ApiPromise } from '@noir/api'
 
 function Main() {
   const { apiState, apiError, } = useSubstrateState()
   const [account, setAccount] = React.useState()
+  const [balance, setBalance] = React.useState()
   const [searchParams] = useSearchParams()
 
   const code = searchParams.get('code')
   useEffect(() => {
-    if (code) {
-      requestToken(code)
-        .then(res => res.text())
-        .then(body => {
-          const token = JSON.parse(body)
-          requestResource(token.access_token)
-            .then(res => res.text())
-            .then(body => {
-              const resource = JSON.parse(body)
-              setAccount(resource.public_key)
-            })
-        })
+    async function loadAccount() {
+      if (code) {
+        const tokenResponse = await requestToken(code);
+        const tokenResult = await tokenResponse.text()
+        const tokenJson = JSON.parse(tokenResult)
+
+        const resourceResponse = await requestResource(tokenJson.access_token);
+        const resourceResult = await resourceResponse.text();
+        const resourceJson = JSON.parse(resourceResult);
+        setAccount(resourceJson.public_key);
+
+        const api = await ApiPromise.create();
+        const accountResult = await api.query.system.account(resourceJson.public_key);
+        console.log({ accountResult });
+        setBalance(accountResult.toHuman());
+      }
     }
+    loadAccount();
   }, [])
 
   const loader = text => (
@@ -76,7 +83,7 @@ function Main() {
     <div ref={contextRef}>
       <Container>
         <Sticky context={contextRef}>
-          <Account account={account} />
+          <Account account={account} balance={balance} />
         </Sticky>
         <Grid stackable columns="equal">
           <Grid.Row stretched>
@@ -86,7 +93,7 @@ function Main() {
             <BlockNumber finalized />
           </Grid.Row>
           <Grid.Row>
-            <Transfer />
+            <Transfer account={account} />
             <Upgrade />
           </Grid.Row>
           <Grid.Row>

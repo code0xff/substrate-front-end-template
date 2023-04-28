@@ -55,6 +55,7 @@ export default function Main(props) {
             label="Submit"
             type="SIGNED-TX"
             setStatus={setStatus}
+            account={props.account}
             attrs={{
               palletRpc: 'balances',
               callable: 'transfer',

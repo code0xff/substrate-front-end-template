@@ -37,9 +37,15 @@ function Main(props) {
         <Menu.Menu position="right" style={{ alignItems: 'center' }}>
           {
             props.account ?
-              <Label basic>
-                <Icon name="user" />{props.account}
-              </Label>
+              <div>
+                <Label basic>
+                  <Icon name="user" />{props.account}
+                </Label>
+                <Label basic>
+                  <Icon name="user" />balance: {props.balance} CDTs
+                </Label>
+              </div>
+
               :
               <Button
                 basic

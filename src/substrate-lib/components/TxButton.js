@@ -5,6 +5,7 @@ import { web3FromSource } from '@polkadot/extension-dapp'
 
 import { useSubstrateState } from '../'
 import utils from '../utils'
+import qs from 'qs'
 
 function TxButton({
   attrs = null,
@@ -15,6 +16,7 @@ function TxButton({
   style = null,
   type = 'QUERY',
   txOnClickHandler = null,
+  account = null,
 }) {
   // Hooks
   const { api, currentAccount } = useSubstrateState()
@@ -83,18 +85,18 @@ function TxButton({
     setUnsub(() => unsub)
   }
 
-  const signedTx = async () => {
+  const signedTx = () => {
     const transformed = transformParams(paramFields, inputParams)
-    // transformed can be empty parameters
-
-    // const txExecute = transformed
-    //   ? api.tx[palletRpc][callable](...transformed)
-    //   : api.tx[palletRpc][callable]()
-    // const transaction = txExecute.toHuman()
-    // console.log(toHuman)
-    // window.open(`http://localhost:9999/sign?message=${toHuman}`, '_blank', 'noopener, noreferrer')
-
-    window.open(`http://localhost:9999/sign?palletRpc=${palletRpc}&callable=${callable}&params=${transformed}`, '_blank', 'noopener, noreferrer')
+    if (!account) {
+      return
+    }
+    const params = {
+      account,
+      palletRpc,
+      callable,
+      params: transformed.toString()
+    }
+    window.open(`http://localhost:9999/sign?${qs.stringify(params)}`, '_blank', 'noopener, noreferrer')
   }
 
   const unsignedTx = async () => {
@@ -143,7 +145,7 @@ function TxButton({
       setUnsub(null)
     }
 
-    setStatus('Sending...')
+    // setStatus('Sending...')
 
     const asyncFunc =
       (isSudo() && sudoTx) ||
@@ -248,6 +250,7 @@ function TxButton({
       onClick={transaction}
       disabled={
         disabled ||
+        !account ||
         !palletRpc ||
         !callable ||
         !allParamsFilled()
