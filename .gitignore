@@ -12,3 +12,4 @@ coverage
 .pnp.*
 package-lock.json
 dist
+.env

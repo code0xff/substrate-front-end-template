@@ -8,7 +8,6 @@ import {
   Sticky,
 } from 'semantic-ui-react'
 import 'semantic-ui-css/semantic.min.css'
-
 import { SubstrateContextProvider, useSubstrateState } from './substrate-lib'
 import { DeveloperConsole } from './substrate-lib/components'
 
@@ -24,7 +23,9 @@ import Account from './Account'
 
 import { useSearchParams } from 'react-router-dom'
 import { requestToken, requestResource } from './oauth/oauth.js'
-import { ApiPromise } from '@noir/api'
+import { u8aToHex } from '@polkadot/util'
+import { toUint8Array } from 'js-base64';
+import { ApiPromise } from '@polkadot/api'
 
 function Main() {
   const { apiState, apiError, } = useSubstrateState()
@@ -34,25 +35,39 @@ function Main() {
 
   const code = searchParams.get('code')
   useEffect(() => {
-    async function loadAccount() {
+    async function queryBalance(universalAddress) {
+      const publicKey = u8aToHex(toUint8Array(universalAddress.slice(1)))
+      const api = await ApiPromise.create()
+      api.query.system.account(publicKey, ({ data: { free } }) => {
+        if (free !== balance) {
+          setBalance(free.toHuman())
+        }
+      })
+    }
+
+    let _account = localStorage.getItem('account')
+    if (_account) {
+      (async () => {
+        setAccount(_account)
+        await queryBalance(_account)
+      })()
+    } else {
       if (code) {
-        const tokenResponse = await requestToken(code);
-        const tokenResult = await tokenResponse.text()
-        const tokenJson = JSON.parse(tokenResult)
+        (async () => {
+          const tokenResponse = await requestToken(code)
+          const tokenResult = await tokenResponse.text()
+          const tokenJson = JSON.parse(tokenResult)
 
-        const resourceResponse = await requestResource(tokenJson.access_token);
-        const resourceResult = await resourceResponse.text();
-        const resourceJson = JSON.parse(resourceResult);
-        setAccount(resourceJson.public_key);
-
-        const api = await ApiPromise.create();
-        const accountResult = await api.query.system.account(resourceJson.public_key);
-        console.log({ accountResult });
-        setBalance(accountResult.toHuman());
+          const resourceResponse = await requestResource(tokenJson.access_token);
+          const resourceResult = await resourceResponse.text()
+          const { public_key } = JSON.parse(resourceResult)
+          localStorage.setItem('account', public_key)
+          setAccount(public_key)
+          await queryBalance(public_key)
+        })()
       }
     }
-    loadAccount();
-  }, [])
+  }, [code])
 
   const loader = text => (
     <Dimmer active>
@@ -83,7 +98,7 @@ function Main() {
     <div ref={contextRef}>
       <Container>
         <Sticky context={contextRef}>
-          <Account account={account} balance={balance} />
+          <Account account={account} balance={balance} setAccount={setAccount} />
         </Sticky>
         <Grid stackable columns="equal">
           <Grid.Row stretched>
@@ -97,7 +112,7 @@ function Main() {
             <Upgrade />
           </Grid.Row>
           <Grid.Row>
-            <Interactor />
+            <Interactor account={account} />
             <Events />
           </Grid.Row>
           <Grid.Row>

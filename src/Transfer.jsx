@@ -16,12 +16,13 @@ export default function Main(props) {
       <h3>Transfer</h3>
       <Form>
         <Form.Field>
-          <Label basic color="teal">
-            <Icon name="hand point right" />1 Unit = 1000000000000&nbsp;
+          <Label basic color="grey">
+            <Icon name="hand point right" />1 CDT = 100 mCDTs
           </Label>
+          <br />
           <Label
             basic
-            color="teal"
+            color="grey"
             style={{ marginLeft: 0, marginTop: '.5em' }}
           >
             <Icon name="hand point right" />

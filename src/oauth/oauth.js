@@ -2,7 +2,7 @@ const requestToken = (code) => {
   const params = {
     'grant_type': 'authorization_code',
     'code': code,
-    'redirect_uri': 'http://localhost:8000/callback',
+    'redirect_uri': 'http://localhost:5173/callback',
     'scope': 'profile',
   }
 
@@ -13,20 +13,19 @@ const requestToken = (code) => {
     formBody.push(`${encodedKey}=${encodedValue}`)
   }
   formBody = formBody.join('&')
-  // console.log(formBody)
 
-  return fetch(`http://localhost:9999/api/v1/oauth2/token`, {
+  return fetch(`${import.meta.env.VITE_KEYHUB_ENDPOINT}/api/v1/oauth2/token`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-      'Authorization': `Basic ${btoa('JJuzRtzmyV2S4h8tvLdR-Q' + ':' + '10883ead3b88e28f02ebe199ab0b0b4edd1ee538c4430a0e2cfdd4af16eb4647')}`,
+      'Authorization': `Basic ${btoa(import.meta.env.VITE_CLIENT_ID + ':' + import.meta.env.VITE_CLIENT_PASSWORD)}`,
     },
     body: formBody,
   })
 }
 
 const requestResource = (accessToken) => {
-  return fetch(`http://localhost:9999/api/v1/oauth2/resource`, {
+  return fetch(`${import.meta.env.VITE_KEYHUB_ENDPOINT}/api/v1/oauth2/resource`, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${accessToken}`,

@@ -11,7 +11,7 @@ import qs from 'qs'
 function Main(props) {
   const signin = () => {
     const state = Math.random().toString(36).slice(2, 11)
-    const client_id = 'JJuzRtzmyV2S4h8tvLdR-Q'
+    const client_id = import.meta.env.VITE_CLIENT_ID
     const params = {
       response_type: 'code',
       scope: 'profile',
@@ -19,7 +19,12 @@ function Main(props) {
       state,
     }
     const queryString = qs.stringify(params)
-    window.location.href = `http://localhost:9999/api/v1/oauth2/authorize?${queryString}`
+    window.location.href = `${import.meta.env.VITE_KEYHUB_ENDPOINT}/api/v1/oauth2/authorize?${queryString}`
+  }
+
+  const signout = () => {
+    props.setAccount(null)
+    localStorage.removeItem('account')
   }
 
   return (
@@ -34,28 +39,34 @@ function Main(props) {
       }}
     >
       <Container>
-        <Menu.Menu position="right" style={{ alignItems: 'center' }}>
+        <Menu.Menu position="left">
           {
             props.account ?
-              <div>
-                <Label basic>
-                  <Icon name="user" />{props.account}
-                </Label>
-                <Label basic>
-                  <Icon name="user" />balance: {props.balance} CDTs
-                </Label>
+              <div style={{ display: 'flex', alignItems: 'end' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'space-between' }}>
+                  <Label basic>
+                    <Icon name="user" />{props.account}
+                  </Label>
+                  <Label basic style={{ marginTop: '0.2em', marginRight: 'auto' }}>
+                    <Icon name="money" />{props.balance} mCDTs
+                  </Label>
+                </div>
               </div>
-
               :
-              <Button
-                basic
-                circular
-                color="grey"
-                floated="right"
-                icon="sign in"
-                onClick={signin}
-              />
+              null
           }
+        </Menu.Menu>
+        <Menu.Menu position='right'>
+          <div style={{ margin: 'auto' }}>
+            <Button
+              basic
+              circular
+              color="grey"
+              floated="right"
+              icon={props.account ? "sign out" : "sign in"}
+              onClick={props.account ? signout : signin }
+            />
+          </div>
         </Menu.Menu>
       </Container>
     </Menu>

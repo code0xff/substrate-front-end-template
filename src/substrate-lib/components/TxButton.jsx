@@ -1,8 +1,6 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import { Button } from 'semantic-ui-react'
-import { web3FromSource } from '@polkadot/extension-dapp'
-
 import { useSubstrateState } from '../'
 import utils from '../utils'
 import qs from 'qs'
@@ -19,7 +17,7 @@ function TxButton({
   account = null,
 }) {
   // Hooks
-  const { api, currentAccount } = useSubstrateState()
+  const { api } = useSubstrateState()
   const [unsub, setUnsub] = useState(null)
 
   const { palletRpc, callable, inputParams, paramFields } = attrs
@@ -32,60 +30,23 @@ function TxButton({
   const isRpc = () => type === 'RPC'
   const isConstant = () => type === 'CONSTANT'
 
-  const getFromAcct = async () => {
-    const {
-      address,
-      meta: { source, isInjected },
-    } = currentAccount
-
-    if (!isInjected) {
-      return [currentAccount]
-    }
-
-    // currentAccount is injected from polkadot-JS extension, need to return the addr and signer object.
-    // ref: https://polkadot.js.org/docs/extension/cookbook#sign-and-send-a-transaction
-    const injector = await web3FromSource(source)
-    return [address, { signer: injector.signer }]
-  }
-
-  const txResHandler = ({ status }) =>
-    status.isFinalized
-      ? setStatus(`😉 Finalized. Block hash: ${status.asFinalized.toString()}`)
-      : setStatus(`Current transaction status: ${status.type}`)
-
-  const txErrHandler = err =>
-    setStatus(`😞 Transaction Failed: ${err.toString()}`)
-
-  const sudoTx = async () => {
-    const fromAcct = await getFromAcct()
-    const transformed = transformParams(paramFields, inputParams)
-    // transformed can be empty parameters
-    const txExecute = transformed
-      ? api.tx.sudo.sudo(api.tx[palletRpc][callable](...transformed))
-      : api.tx.sudo.sudo(api.tx[palletRpc][callable]())
-
-    const unsub = txExecute
-      .signAndSend(...fromAcct, txResHandler)
-      .catch(txErrHandler)
-
-    setUnsub(() => unsub)
-  }
-
-  const uncheckedSudoTx = async () => {
-    const fromAcct = await getFromAcct()
-    const txExecute = api.tx.sudo.sudoUncheckedWeight(
-      api.tx[palletRpc][callable](...inputParams),
-      0
-    )
-
-    const unsub = txExecute
-      .signAndSend(...fromAcct, txResHandler)
-      .catch(txErrHandler)
-
-    setUnsub(() => unsub)
-  }
-
   const signedTx = () => {
+    const transformed = transformParams(paramFields, inputParams)
+    if (!account) {
+      return
+    }
+    const params = {
+      endpoint: import.meta.env.VITE_PROVIDER_SOCKET,
+      account,
+      palletRpc,
+      callable,
+      params: transformed.toString(),
+    }
+    window.open(`${import.meta.env.VITE_KEYHUB_ENDPOINT}/sign?${qs.stringify(params)}`, '_blank', 'noopener, noreferrer')
+  }
+
+  const unsignedTx = async () => {
+    // transformed can be empty parameters
     const transformed = transformParams(paramFields, inputParams)
     if (!account) {
       return
@@ -96,18 +57,7 @@ function TxButton({
       callable,
       params: transformed.toString()
     }
-    window.open(`http://localhost:9999/sign?${qs.stringify(params)}`, '_blank', 'noopener, noreferrer')
-  }
-
-  const unsignedTx = async () => {
-    const transformed = transformParams(paramFields, inputParams)
-    // transformed can be empty parameters
-    const txExecute = transformed
-      ? api.tx[palletRpc][callable](...transformed)
-      : api.tx[palletRpc][callable]()
-
-    const unsub = await txExecute.send(txResHandler).catch(txErrHandler)
-    setUnsub(() => unsub)
+    window.open(`${import.meta.env.VITE_KEYHUB_ENDPOINT}/sign?${qs.stringify(params)}`, '_blank', 'noopener, noreferrer')
   }
 
   const queryResHandler = result =>
@@ -264,6 +214,7 @@ function TxButton({
 // prop type checking
 TxButton.propTypes = {
   setStatus: PropTypes.func.isRequired,
+  account: PropTypes.string,
   type: PropTypes.oneOf([
     'QUERY',
     'RPC',
@@ -287,8 +238,6 @@ function TxGroupButton(props) {
       <TxButton label="Unsigned" type="UNSIGNED-TX" color="grey" {...props} />
       <Button.Or />
       <TxButton label="Signed" type="SIGNED-TX" color="blue" {...props} />
-      <Button.Or />
-      <TxButton label="SUDO" type="SUDO-TX" color="red" {...props} />
     </Button.Group>
   )
 }
