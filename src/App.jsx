@@ -25,7 +25,7 @@ import { useSearchParams } from 'react-router-dom'
 import { requestToken, requestResource } from './oauth/oauth.js'
 import { u8aToHex } from '@polkadot/util'
 import { toUint8Array } from 'js-base64';
-import { ApiPromise } from '@polkadot/api'
+import { ApiPromise, WsProvider } from '@polkadot/api'
 
 function Main() {
   const { apiState, apiError, } = useSubstrateState()
@@ -37,7 +37,8 @@ function Main() {
   useEffect(() => {
     async function queryBalance(universalAddress) {
       const publicKey = u8aToHex(toUint8Array(universalAddress.slice(1)))
-      const api = await ApiPromise.create()
+      const provider = new WsProvider(import.meta.env.VITE_PROVIDER_SOCKET)
+      const api = await ApiPromise.create({ provider })
       api.query.system.account(publicKey, ({ data: { free } }) => {
         if (free !== balance) {
           setBalance(free.toHuman())
