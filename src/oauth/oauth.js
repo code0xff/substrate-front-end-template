@@ -2,7 +2,7 @@ const requestToken = (code) => {
   const params = {
     'grant_type': 'authorization_code',
     'code': code,
-    'redirect_uri': 'http://localhost:5173/callback',
+    'redirect_uri': import.meta.env.VITE_REDIRECT_URI,
     'scope': 'profile',
   }
 
