@@ -6,7 +6,7 @@ import { ApiPromise, WsProvider } from '@polkadot/api'
 import config from '../config'
 
 const parsedQuery = new URLSearchParams(window.location.search)
-const connectedSocket = parsedQuery.get('rpc') || import.meta.env.VITE_PROVIDER_SOCKET
+const connectedSocket = parsedQuery.get('rpc') || import.meta.env.VITE_WS_PROVIDER
 ///
 // Initial state for `useReducer`
 

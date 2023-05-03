@@ -17,7 +17,7 @@ export default function Main(props) {
       <Form>
         <Form.Field>
           <Label basic color="grey">
-            <Icon name="hand point right" />1 CDT = 100 mCDTs
+            <Icon name="hand point right" />1 CDT = 100 cCDTs
           </Label>
           <br />
           <Label

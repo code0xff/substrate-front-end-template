@@ -48,7 +48,7 @@ function Main(props) {
                     <Icon name="user" />{props.account}
                   </Label>
                   <Label basic style={{ marginTop: '0.2em', marginRight: 'auto' }}>
-                    <Icon name="money" />{props.balance} mCDTs
+                    <Icon name="money" />{props.balance} cCDTs
                   </Label>
                 </div>
               </div>

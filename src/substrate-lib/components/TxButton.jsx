@@ -36,7 +36,7 @@ function TxButton({
       return
     }
     const params = {
-      endpoint: import.meta.env.VITE_PROVIDER_SOCKET,
+      endpoint: import.meta.env.VITE_WS_PROVIDER,
       account,
       palletRpc,
       callable,
