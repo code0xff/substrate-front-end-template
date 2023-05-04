@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import { Button } from 'semantic-ui-react'
-import { web3FromSource } from '@polkadot/extension-dapp'
-
 import { useSubstrateState } from '../'
 import utils from '../utils'
+import qs from 'qs'
 
 function TxButton({
   attrs = null,
@@ -15,11 +14,11 @@ function TxButton({
   style = null,
   type = 'QUERY',
   txOnClickHandler = null,
+  account = null,
 }) {
   // Hooks
-  const { api, currentAccount } = useSubstrateState()
+  const { api } = useSubstrateState()
   const [unsub, setUnsub] = useState(null)
-  const [sudoKey, setSudoKey] = useState(null)
 
   const { palletRpc, callable, inputParams, paramFields } = attrs
 
@@ -31,96 +30,34 @@ function TxButton({
   const isRpc = () => type === 'RPC'
   const isConstant = () => type === 'CONSTANT'
 
-  const loadSudoKey = () => {
-    ;(async function () {
-      if (!api || !api.query.sudo) {
-        return
-      }
-      const sudoKey = await api.query.sudo.key()
-      sudoKey.isEmpty ? setSudoKey(null) : setSudoKey(sudoKey.toString())
-    })()
-  }
-
-  useEffect(loadSudoKey, [api])
-
-  const getFromAcct = async () => {
-    const {
-      address,
-      meta: { source, isInjected },
-    } = currentAccount
-
-    if (!isInjected) {
-      return [currentAccount]
+  const signedTx = () => {
+    const transformed = transformParams(paramFields, inputParams)
+    if (!account) {
+      return
     }
-
-    // currentAccount is injected from polkadot-JS extension, need to return the addr and signer object.
-    // ref: https://polkadot.js.org/docs/extension/cookbook#sign-and-send-a-transaction
-    const injector = await web3FromSource(source)
-    return [address, { signer: injector.signer }]
-  }
-
-  const txResHandler = ({ status }) =>
-    status.isFinalized
-      ? setStatus(`😉 Finalized. Block hash: ${status.asFinalized.toString()}`)
-      : setStatus(`Current transaction status: ${status.type}`)
-
-  const txErrHandler = err =>
-    setStatus(`😞 Transaction Failed: ${err.toString()}`)
-
-  const sudoTx = async () => {
-    const fromAcct = await getFromAcct()
-    const transformed = transformParams(paramFields, inputParams)
-    // transformed can be empty parameters
-    const txExecute = transformed
-      ? api.tx.sudo.sudo(api.tx[palletRpc][callable](...transformed))
-      : api.tx.sudo.sudo(api.tx[palletRpc][callable]())
-
-    const unsub = txExecute
-      .signAndSend(...fromAcct, txResHandler)
-      .catch(txErrHandler)
-
-    setUnsub(() => unsub)
-  }
-
-  const uncheckedSudoTx = async () => {
-    const fromAcct = await getFromAcct()
-    const txExecute = api.tx.sudo.sudoUncheckedWeight(
-      api.tx[palletRpc][callable](...inputParams),
-      0
-    )
-
-    const unsub = txExecute
-      .signAndSend(...fromAcct, txResHandler)
-      .catch(txErrHandler)
-
-    setUnsub(() => unsub)
-  }
-
-  const signedTx = async () => {
-    const fromAcct = await getFromAcct()
-    const transformed = transformParams(paramFields, inputParams)
-    // transformed can be empty parameters
-
-    const txExecute = transformed
-      ? api.tx[palletRpc][callable](...transformed)
-      : api.tx[palletRpc][callable]()
-
-    const unsub = await txExecute
-      .signAndSend(...fromAcct, txResHandler)
-      .catch(txErrHandler)
-
-    setUnsub(() => unsub)
+    const params = {
+      endpoint: import.meta.env.VITE_WS_PROVIDER,
+      account,
+      palletRpc,
+      callable,
+      params: transformed.toString(),
+    }
+    window.open(`${import.meta.env.VITE_KEYHUB_ENDPOINT}/sign?${qs.stringify(params)}`, '_blank', 'noopener, noreferrer')
   }
 
   const unsignedTx = async () => {
-    const transformed = transformParams(paramFields, inputParams)
     // transformed can be empty parameters
-    const txExecute = transformed
-      ? api.tx[palletRpc][callable](...transformed)
-      : api.tx[palletRpc][callable]()
-
-    const unsub = await txExecute.send(txResHandler).catch(txErrHandler)
-    setUnsub(() => unsub)
+    const transformed = transformParams(paramFields, inputParams)
+    if (!account) {
+      return
+    }
+    const params = {
+      account,
+      palletRpc,
+      callable,
+      params: transformed.toString()
+    }
+    window.open(`${import.meta.env.VITE_KEYHUB_ENDPOINT}/sign?${qs.stringify(params)}`, '_blank', 'noopener, noreferrer')
   }
 
   const queryResHandler = result =>
@@ -158,7 +95,7 @@ function TxButton({
       setUnsub(null)
     }
 
-    setStatus('Sending...')
+    // setStatus('Sending...')
 
     const asyncFunc =
       (isSudo() && sudoTx) ||
@@ -253,28 +190,20 @@ function TxButton({
     })
   }
 
-  const isSudoer = acctPair => {
-    if (!sudoKey || !acctPair) {
-      return false
-    }
-    return acctPair.address === sudoKey
-  }
-
   return (
     <Button
       basic
+      size="mini"
       color={color}
       style={style}
       type="submit"
       onClick={transaction}
       disabled={
         disabled ||
+        !account ||
         !palletRpc ||
         !callable ||
-        !allParamsFilled() ||
-        // These txs required currentAccount to be set
-        ((isSudo() || isUncheckedSudo() || isSigned()) && !currentAccount) ||
-        ((isSudo() || isUncheckedSudo()) && !isSudoer(currentAccount))
+        !allParamsFilled()
       }
     >
       {label}
@@ -285,6 +214,7 @@ function TxButton({
 // prop type checking
 TxButton.propTypes = {
   setStatus: PropTypes.func.isRequired,
+  account: PropTypes.string,
   type: PropTypes.oneOf([
     'QUERY',
     'RPC',
@@ -304,12 +234,10 @@ TxButton.propTypes = {
 
 function TxGroupButton(props) {
   return (
-    <Button.Group>
+    <Button.Group size="mini">
       <TxButton label="Unsigned" type="UNSIGNED-TX" color="grey" {...props} />
       <Button.Or />
       <TxButton label="Signed" type="SIGNED-TX" color="blue" {...props} />
-      <Button.Or />
-      <TxButton label="SUDO" type="SUDO-TX" color="red" {...props} />
     </Button.Group>
   )
 }

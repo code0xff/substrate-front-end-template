@@ -46,6 +46,7 @@ function Main(props) {
       <Form>
         <Form.Field>
           <Input
+            size="mini"
             label="New Value"
             state="newValue"
             type="number"

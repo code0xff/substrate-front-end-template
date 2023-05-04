@@ -29,7 +29,7 @@ function Main(props) {
           </Card.Meta>
         </Card.Content>
         <Card.Content extra>
-          <Modal trigger={<Button>Show Metadata</Button>}>
+          <Modal trigger={<Button size='mini'>Show Metadata</Button>}>
             <Modal.Header>Runtime Metadata</Modal.Header>
             <Modal.Content scrolling>
               <Modal.Description>

@@ -162,10 +162,9 @@ function Main(props) {
 
   return (
     <Grid.Column width={8}>
-      <h1>Pallet Interactor</h1>
-      <Form>
-        <Form.Group style={{ overflowX: 'auto' }} inline>
-          <label>Interaction Type</label>
+      <h3>Pallet Interactor</h3>
+      <Form size="mini">
+        <Form.Group style={{ overflowX: 'auto' }} inline >
           <Form.Radio
             label="Extrinsic"
             name="interxType"
@@ -236,7 +235,7 @@ function Main(props) {
               <Label
                 basic
                 pointing
-                color="teal"
+                color="grey"
                 content={getOptionalMsg(interxType)}
               />
             ) : null}
@@ -251,6 +250,7 @@ function Main(props) {
               callable,
               inputParams,
               paramFields,
+              account: props.account
             }}
           />
         </Form.Field>
@@ -262,14 +262,14 @@ function Main(props) {
 
 function InteractorSubmit(props) {
   const {
-    attrs: { interxType },
+    attrs: { interxType, account },
   } = props
   if (interxType === 'QUERY') {
-    return <TxButton label="Query" type="QUERY" color="blue" {...props} />
+    return <TxButton label="Query" type="QUERY" color="blue" {...props} account={account} />
   } else if (interxType === 'EXTRINSIC') {
-    return <TxGroupButton {...props} />
+    return <TxGroupButton {...props} account={account} />
   } else if (interxType === 'RPC' || interxType === 'CONSTANT') {
-    return <TxButton label="Submit" type={interxType} color="blue" {...props} />
+    return <TxButton label="Submit" type={interxType} color="blue" {...props} account={account} />
   }
 }
 
