@@ -4,7 +4,7 @@
   "private": true,
   "author": "Parity Technologies <admin@parity.io>",
   "license": "Unlicense",
-  "homepage": "https://substrate-developer-hub.github.io/substrate-front-end-template",
+  "homepage": "https://code0xff.github.io/substrate-front-end-template",
   "bugs": {
     "url": "https://github.com/substrate-developer-hub/substrate-front-end-template/issues"
   },
@@ -21,7 +21,7 @@
     "eslint:write": "eslint --fix --ext .jsx,.js src/",
     "prettier:check": "prettier -c src/*",
     "prettier:write": "prettier -w src/*",
-    "deploy": "gh-pages -d build -m '[ci skip] Updates'"
+    "deploy": "gh-pages -d build"
   },
   "dependencies": {
     "@noir/api": "github:noir-js/api",
