@@ -61,10 +61,10 @@ function Main() {
 
           const resourceResponse = await requestResource(tokenJson.access_token);
           const resourceResult = await resourceResponse.text()
-          const { public_key } = JSON.parse(resourceResult)
-          localStorage.setItem('account', public_key)
-          setAccount(public_key)
-          await queryBalance(public_key)
+          const { name } = JSON.parse(resourceResult)
+          localStorage.setItem('account', name)
+          setAccount(name)
+          await queryBalance(name)
         })()
       }
     }
