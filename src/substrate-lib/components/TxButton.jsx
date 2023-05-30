@@ -35,8 +35,9 @@ function TxButton({
     if (!account) {
       return
     }
+    const connectedSocket = localStorage.getItem('rpc')
     const params = {
-      endpoint: import.meta.env.VITE_WS_PROVIDER,
+      endpoint: connectedSocket,
       account,
       palletRpc,
       callable,

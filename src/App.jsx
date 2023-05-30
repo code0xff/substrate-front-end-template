@@ -37,7 +37,8 @@ function Main() {
   useEffect(() => {
     async function queryBalance(universalAddress) {
       const publicKey = u8aToHex(toUint8Array(universalAddress.slice(1)))
-      const provider = new WsProvider(import.meta.env.VITE_WS_PROVIDER)
+      const connectedSocket = localStorage.getItem('rpc')
+      const provider = new WsProvider(connectedSocket)
       const api = await ApiPromise.create({ provider })
       api.query.system.account(publicKey, ({ data: { free } }) => {
         if (free !== balance) {
