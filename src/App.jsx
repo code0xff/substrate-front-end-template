@@ -31,6 +31,7 @@ function Main() {
   const { apiState, apiError, } = useSubstrateState()
   const [account, setAccount] = React.useState()
   const [balance, setBalance] = React.useState()
+  const [rpc, setRpc] = React.useState()
   const [searchParams] = useSearchParams()
 
   const code = searchParams.get('code')
@@ -47,7 +48,9 @@ function Main() {
       })
     }
 
-    let _account = localStorage.getItem('account')
+    const _account = localStorage.getItem('account')
+    const _rpc = localStorage.getItem('rpc')
+    setRpc(_rpc)
     if (_account) {
       (async () => {
         setAccount(_account)
@@ -100,7 +103,12 @@ function Main() {
     <div ref={contextRef}>
       <Container>
         <Sticky context={contextRef}>
-          <Account account={account} balance={balance} setAccount={setAccount} />
+          <Account 
+            account={account} 
+            balance={balance} 
+            setAccount={setAccount} 
+            rpc={rpc}
+          />
         </Sticky>
         <Grid stackable columns="equal">
           <Grid.Row stretched>

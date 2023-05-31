@@ -50,10 +50,17 @@ function Main(props) {
                   <Label basic style={{ marginTop: '0.2em', marginRight: 'auto' }}>
                     <Icon name="money" />{props.balance} cCDTs
                   </Label>
+                  <Label basic style={{ marginTop: '0.2em', marginRight: 'auto' }}>
+                    <Icon name="linkify" />{props.rpc}
+                  </Label>
                 </div>
               </div>
               :
-              null
+              <div>
+                <Label basic style={{ marginTop: '0.2em', marginRight: 'auto' }}>
+                  <Icon name="linkify" />{props.rpc}
+                </Label>
+              </div>
           }
         </Menu.Menu>
         <Menu.Menu position='right'>
@@ -64,7 +71,7 @@ function Main(props) {
               color="grey"
               floated="right"
               icon={props.account ? "sign out" : "sign in"}
-              onClick={props.account ? signout : signin }
+              onClick={props.account ? signout : signin}
             />
           </div>
         </Menu.Menu>
